@@ -1,10 +1,10 @@
 """
->>> import cr_bayesian_optim as crb
+>>> import cr_fractal_dim as crb
 >>> options = crb.Options()
 >>> cells, out_path = crb.run_sim_branching(options)
 """
 
-from .cr_bayesian_optim import (
+from .cr_fractal_dim import (
     run_sim_branching,
     load_cells,
     load_cells_at_iteration,
@@ -26,7 +26,7 @@ type SingleIterCells = dict[
 ]
 type SingleIterSubDomains = dict[int, dict]
 
-import cr_bayesian_optim.sim_branching as sim_branching
-import cr_bayesian_optim.plotting as plotting
+import cr_fractal_dim.sim_branching as sim_branching
+import cr_fractal_dim.plotting as plotting
 
 from .fractal_dim import fractal_dim_main

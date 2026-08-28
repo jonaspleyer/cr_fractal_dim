@@ -3,7 +3,7 @@ requires = ["maturin>=1.8,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "cr_bayesian_optim"
+name = "cr_fractal_dim"
 requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Rust",
@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [project.scripts]
-crb_fractal_dim = "cr_bayesian_optim:fractal_dim_main"
+crb_fractal_dim = "cr_fractal_dim:fractal_dim_main"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]

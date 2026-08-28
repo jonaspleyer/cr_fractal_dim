@@ -1,6 +1,6 @@
 import numpy as np
-import cr_bayesian_optim as crb
-from cr_bayesian_optim.plotting import COLOR1, COLOR2, COLOR3, COLOR4, COLOR5
+import cr_fractal_dim as crb
+from cr_fractal_dim.plotting import COLOR1, COLOR2, COLOR3, COLOR4, COLOR5
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import scipy as sp

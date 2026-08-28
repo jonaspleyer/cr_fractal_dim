@@ -1,4 +1,4 @@
-from .cr_bayesian_optim import (
+from .cr_fractal_dim import (
     load_cells_at_iteration,
     get_all_iterations,
     load_subdomains_at_iteration,
