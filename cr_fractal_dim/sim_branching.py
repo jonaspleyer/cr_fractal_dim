@@ -80,7 +80,7 @@ def calculate_discretization(
         return y > 0
 
 
-def plot_discretizations(last_pos, n_voxels_list, options, out_path: Path):
+def plot_discretizations(last_pos, n_voxels_list, options, out_path: Path | None):
     # Plot Snapshots of Discretization to calculate Fractal Dimension
     n = len(n_voxels_list)
     indices = np.round(np.linspace(0, n - 1, min(10, n), endpoint=True)).astype(int)
@@ -94,15 +94,25 @@ def plot_discretizations(last_pos, n_voxels_list, options, out_path: Path):
         )
         counts.append((n_voxels, y))
 
+    imgs = []
     max_overall = np.max([np.max(c[1]) for c in counts])
     for n_voxels, y in counts:
         img = Image.fromarray(
             np.round(y / max_overall * 125 + (y > 0) * 130).astype(np.uint8).T[::-1]
         )
-        img.save(out_path / f"discretization-nvoxels-{n_voxels:06}.png")
+        if out_path is not None:
+            img.save(out_path / f"discretization-nvoxels-{n_voxels:06}.png")
+        imgs.append(img)
+
+    return imgs
 
 
-def calculate_fractal_dim_for_pos(pos, options: Options, out_path: Path | None = None):
+def calculate_fractal_dim_for_pos(
+    pos,
+    options: Options,
+    out_path: Path | None = None,
+    return_imgs=False,
+):
     x = np.linspace(
         options.bacteria.cell_radius / 2.0,
         options.domain.domain_size / 10,
@@ -113,8 +123,10 @@ def calculate_fractal_dim_for_pos(pos, options: Options, out_path: Path | None =
     fields = [calculate_discretization(pos, n, options) for n in n_voxels_list]
     count_boxes = np.array([np.sum(yi > 0) for yi in fields]).astype(int)
 
-    if out_path is not None:
-        plot_discretizations(pos, n_voxels_list, options, out_path)
+    if out_path is not None or return_imgs:
+        imgs = plot_discretizations(pos, n_voxels_list, options, out_path)
+        if return_imgs:
+            return imgs
 
     popt, pcov = sp.optimize.curve_fit(
         lambda x, a, b: a * x + b, np.log(x), np.log(count_boxes)

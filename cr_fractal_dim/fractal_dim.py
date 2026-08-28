@@ -6,6 +6,13 @@ from tqdm import tqdm
 import scipy as sp
 from glob import glob
 import os
+import string
+from matplotlib.gridspec import GridSpec
+
+from cr_fractal_dim.sim_branching import (
+    calculate_fractal_dim_for_pos,
+    plot_discretizations,
+)
 
 
 def calculate_angle(t, y, ymin, ymax, ind):
@@ -376,15 +383,61 @@ def fractal_dim_main():
             "figure.titlesize": 20,
         }
     )
-    fig, axs = plt.subplots(1, 3, figsize=(24, 8))
+    # fig, axs = plt.subplots(2, 3, figsize=(24, 16))
+    gap = 0.25
+    fig = plt.figure(figsize=(24, 8 + 2.4 + gap))
+    gs = GridSpec(2, 1, height_ratios=(8, 2.4 + gap))
+    fig1 = fig.add_subfigure(gs[0, 0])
+    fig2 = fig.add_subfigure(gs[1, 0])
+
+    axs1 = fig1.subplots(1, 3)
+    axs2 = fig2.subplots(1, 10)
+    axs_all = [*axs1, *axs2]
+
+    for label, ax in zip(string.ascii_uppercase, axs_all):
+        ax.text(
+            0.03,
+            0.97,
+            label,
+            fontsize=40 if label in ["A", "B", "C"] else 30,
+            fontweight="semibold",
+            fontfamily="serif",
+            va="top",
+            horizontalalignment="left",
+            transform=ax.transAxes,
+            color="black" if label in ["A", "B", "C"] else "white",
+        )
 
     options = produce_options()
-    fractal_dim_comparison(axs[0], options)
-    fractal_dim_over_time(axs[1], options)
-    fractal_dim_bacteria_count_vs_diffusion_constant(axs[2], options)
+    fractal_dim_comparison(axs1[0], options)
+    fractal_dim_over_time(axs1[1], options)
+    fractal_dim_bacteria_count_vs_diffusion_constant(axs1[2], options)
 
-    fig.tight_layout()
+    options.domain.diffusion_constant = 80
+    cells, out_path = crb.sim_branching.load_or_compute_last_iter(options)
+    pos = np.array([c[0].mechanics.pos for c in cells.values()])
+    imgs = calculate_fractal_dim_for_pos(pos, options, out_path, return_imgs=True)
+
+    for ax, img in zip(axs2, imgs):
+        ax.imshow(
+            np.max(img) - img,
+            aspect="auto",
+            cmap="Grays",
+        )
+        ax.set_axis_off()
+
+    s = 0.03
+    fig1.subplots_adjust(left=s, bottom=3 * s, top=1 - 3 * s, right=1 - s)
+    fig2.subplots_adjust(
+        left=0,
+        bottom=0,
+        top=1 - gap / (2.4 + gap),
+        right=1,
+        wspace=gap / (len(axs2) - 1),
+    )
+
+    # fig.tight_layout()
     fig.savefig(options.storage_location / "fractal-dim.pdf")
     plt.close(fig)
 
-    runtime_plot(options)
+    # runtime_plot(options)
