@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 import tqdm
 import multiprocessing as mp
 import itertools
-from skopt.plots import plot_gaussian_process, plot_convergence, plot_objective
 
 # Define colors
 COLOR1 = "#0c457d"
@@ -186,25 +185,3 @@ def generate_movie(opath: Path, play_movie: bool = True):
         print("Playing Movie")
         bashcmd2 = f"firefox ./{opath}/movie.mp4"
         os.system(bashcmd2)
-
-
-# Plotting for bacteria rods optimization:
-def plot_optimization_convergence_bayes(res, path="", add_name=""):
-    fig, ax = plt.subplots()
-    plot_convergence(res)
-    plt.savefig(path + "skopt_convergence" + add_name + ".png", bbox_inches="tight")
-    plt.close(fig)
-
-
-def plot_1D_cost_approximation_bayes(res, path="", add_name=""):
-    fig, ax = plt.subplots()
-    _ = plot_gaussian_process(res)
-    plt.savefig(path + "cost_approximation" + add_name + ".png", bbox_inches="tight")
-    plt.close(fig)
-
-
-def plot_objective_projection_bayes(res, path="", add_name=""):
-    fig, ax = plt.subplots()
-    _ = plot_objective(res, n_points=10)
-    plt.savefig(path + "objective_projection" + add_name + ".png", bbox_inches="tight")
-    plt.close(fig)
