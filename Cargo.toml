@@ -14,7 +14,7 @@ cellular_raza = { version = "0.4.0", features = [ "pyo3", "approx" ] }
 nalgebra = { version="0.34" }
 num = "0.4"
 pyo3 = { version = "0.26", features = ["serde"] }
-pythonize = "0.26.0"
+pythonize = "0.29.0"
 rand = "0.9"
 rand_chacha = "0.9"
 rand_distr = "0.5"
