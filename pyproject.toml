@@ -12,11 +12,8 @@ classifiers = [
 ]
 dynamic = ["version"]
 dependencies = [
-    "numpy",
     "matplotlib",
     "tqdm",
-    "scipy",
-    "cr-mech-coli==0.8.0",
 ]
 
 [project.scripts]

@@ -116,5 +116,7 @@ def calculate_fractal_dim_for_pos(pos, options: Options, out_path: Path | None =
     if out_path is not None:
         plot_discretizations(pos, n_voxels_list, options, out_path)
 
-    popt, pcov = sp.optimize.curve_fit(lambda x, a, b: a * x + b, np.log(x), np.log(count_boxes))
+    popt, pcov = sp.optimize.curve_fit(
+        lambda x, a, b: a * x + b, np.log(x), np.log(count_boxes)
+    )
     return x, count_boxes, popt, pcov

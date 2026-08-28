@@ -66,10 +66,12 @@ def plot_iteration(
     max_size = np.max([sbd["index_max"] for sbd in subdomains.values()], axis=0)
     all_values = np.zeros(max_size)
     for sbd in subdomains.values():
-        values = np.array(sbd["extracellular"]["data"]).reshape(sbd["extracellular"]["dim"])[
-            :, :, 0
-        ]
-        filt = np.array(sbd["ownership_array"]["data"]).reshape(sbd["ownership_array"]["dim"])
+        values = np.array(sbd["extracellular"]["data"]).reshape(
+            sbd["extracellular"]["dim"]
+        )[:, :, 0]
+        filt = np.array(sbd["ownership_array"]["data"]).reshape(
+            sbd["ownership_array"]["dim"]
+        )
         filt = filt[1:-1, 1:-1]
 
         index_min = np.array(sbd["index_min"])
@@ -161,7 +163,9 @@ def plot_all_iterations(
         itertools.repeat(kwargs),
     )
     print("Plotting Results")
-    _ = list(tqdm.tqdm(pool.imap(__plot_all_iterations_helper, args), total=len(iterations)))
+    _ = list(
+        tqdm.tqdm(pool.imap(__plot_all_iterations_helper, args), total=len(iterations))
+    )
 
 
 def generate_movie(opath: Path, play_movie: bool = True):
@@ -185,21 +189,22 @@ def generate_movie(opath: Path, play_movie: bool = True):
 
 
 # Plotting for bacteria rods optimization:
-def plot_optimization_convergence_bayes(res, path='', add_name=''):
+def plot_optimization_convergence_bayes(res, path="", add_name=""):
     fig, ax = plt.subplots()
     plot_convergence(res)
-    plt.savefig(path+'skopt_convergence'+add_name+'.png', bbox_inches='tight')
+    plt.savefig(path + "skopt_convergence" + add_name + ".png", bbox_inches="tight")
     plt.close(fig)
 
 
-def plot_1D_cost_approximation_bayes(res, path='', add_name=''):
+def plot_1D_cost_approximation_bayes(res, path="", add_name=""):
     fig, ax = plt.subplots()
     _ = plot_gaussian_process(res)
-    plt.savefig(path+'cost_approximation'+add_name+'.png', bbox_inches='tight')
+    plt.savefig(path + "cost_approximation" + add_name + ".png", bbox_inches="tight")
     plt.close(fig)
 
-def plot_objective_projection_bayes(res, path='', add_name=''):
+
+def plot_objective_projection_bayes(res, path="", add_name=""):
     fig, ax = plt.subplots()
     _ = plot_objective(res, n_points=10)
-    plt.savefig(path+'objective_projection'+add_name+'.png', bbox_inches='tight')
+    plt.savefig(path + "objective_projection" + add_name + ".png", bbox_inches="tight")
     plt.close(fig)

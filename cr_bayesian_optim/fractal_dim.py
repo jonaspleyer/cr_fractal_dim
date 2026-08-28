@@ -9,22 +9,25 @@ import os
 
 
 def calculate_angle(t, y, ymin, ymax, ind):
-    ratio = (y[ind + 1] - y[ind]) / (ymax - ymin) / (t[ind + 1] - t[ind]) * (np.max(t) - np.min(t))
+    ratio = (
+        (y[ind + 1] - y[ind])
+        / (ymax - ymin)
+        / (t[ind + 1] - t[ind])
+        * (np.max(t) - np.min(t))
+    )
     angle = 360 / (2 * np.pi) * np.atan(ratio)
     return angle
 
 
 def produce_options():
-    options = crb.Options(show_progressbar=True, storage_location="out/fractal_dim_multi")
-    options.time.t_max = 2000
-    options.domain.domain_size = 2000
-    options.time.dt = 0.3
+    options = crb.Options(progressbar=True, storage_location="out/fractal_dim_multi")
+    options.time.t_max = 3000
+    options.domain.domain_size = 3000
+    options.time.dt = 0.2
     return options
 
 
-def fractal_dim_over_time():
-    options = produce_options()
-
+def fractal_dim_over_time(ax, options):
     t = []
     y1 = []
     y1_err = []
@@ -35,25 +38,38 @@ def fractal_dim_over_time():
         cells, _ = crb.sim_branching.load_or_compute_full(options)
 
         iterations = sorted(cells.keys())
-        dims_mean = []
-        dims_std = []
-        for i in tqdm(iterations, desc="Calculating dim(t)"):
-            pos = np.array([c[0].mechanics.pos for c in cells[i].values()])
+        l1 = options.storage_location / f"dims_mean-{diffusion_constant:6.3f}.npy"
+        l2 = options.storage_location / f"dims_std-{diffusion_constant:6.3f}.npy"
+        try:
+            dims_mean = np.load(l1)
+            dims_std = np.load(l2)
+        except:
+            dims_mean = []
+            dims_std = []
+            for i in tqdm(iterations, desc="Calculating dim(t)"):
+                pos = np.array([c[0].mechanics.pos for c in cells[i].values()])
 
-            _, _, popt, pcov = crb.sim_branching.calculate_fractal_dim_for_pos(pos, options, None)
-            dims_mean.append(-popt[0])
-            dims_std.append(pcov[0, 0] ** 0.5)
+                _, _, popt, pcov = crb.sim_branching.calculate_fractal_dim_for_pos(
+                    pos, options, None
+                )
+                dims_mean.append(-popt[0])
+                dims_std.append(pcov[0, 0] ** 0.5)
+
+            np.save(l1, dims_mean)
+            np.save(l2, dims_std)
+            dims_mean = np.array(dims_mean)
+            dims_std = np.array(dims_std)
 
         t.append(np.array(iterations) * options.time.dt / 60)
         y1.append(np.array(dims_mean))
         y1_err.append(np.array(dims_std))
 
-    fig, ax = plt.subplots(figsize=(8, 8))
-
     # Plot Fractal Dimension
     for i in range(len(t)):
         ax.plot(t[i], y1[i], label="dim", color=COLOR1)
-        ax.fill_between(t[i], y1[i] - y1_err[i], y1[i] + y1_err[i], color=COLOR3, alpha=0.3)
+        ax.fill_between(
+            t[i], y1[i] - y1_err[i], y1[i] + y1_err[i], color=COLOR3, alpha=0.3
+        )
 
         # Plot Fit
         popt, pcov = sp.optimize.curve_fit(
@@ -107,21 +123,15 @@ def fractal_dim_over_time():
     ax.minorticks_on()
     ax.grid(True, which="minor", linestyle="-", linewidth=0.25, alpha=0.15)
     ax.set_axisbelow(True)
-    fig.tight_layout()
-    fig.savefig(options.storage_location / "fractal-dim-over-time.pdf")
-    plt.close(fig)
 
 
-def fractal_dim_comparison():
+def fractal_dim_comparison(ax, options):
     # Initialize Graph
-    fig, ax = plt.subplots(figsize=(8, 8))
-
     xmin = np.inf
     xmax = -np.inf
     ymin = np.inf
     ymax = -np.inf
 
-    options = produce_options()
     diffusion_constants = [80, 5, 0.5]
 
     results = []
@@ -131,7 +141,9 @@ def fractal_dim_comparison():
         cells, out_path = crb.sim_branching.load_or_compute_last_iter(options)
         last_pos = np.array([c[0].mechanics.pos for c in cells.values()])
 
-        x, y, popt, _ = crb.sim_branching.calculate_fractal_dim_for_pos(last_pos, options, out_path)
+        x, y, popt, _ = crb.sim_branching.calculate_fractal_dim_for_pos(
+            last_pos, options, out_path
+        )
 
         results.append((x, y, popt))
         xmin = min(np.min(x), xmin)
@@ -199,12 +211,9 @@ def fractal_dim_comparison():
     ax.minorticks_on()
     ax.grid(True, which="minor", linestyle="-", linewidth=0.25, alpha=0.15)
     ax.set_axisbelow(True)
-    fig.tight_layout()
-    fig.savefig(options.storage_location / "fractal-dim-box-size-scaling.pdf")
-    plt.close(fig)
 
 
-def runtime_plot():
+def runtime_plot(options):
     options = produce_options()
     diffusion_constants = [80, 5, 0.5]
 
@@ -248,7 +257,9 @@ def runtime_plot():
         yfit = a * t**2 + b * t
 
         # Plot Fit
-        ax.plot(t, yfit, label="At²+Bt", color=COLOR5, linestyle=(4, (3, 7)), linewidth=2)
+        ax.plot(
+            t, yfit, label="At²+Bt", color=COLOR5, linestyle=(4, (3, 7)), linewidth=2
+        )
         ax.set_xlim(np.min(t).astype(float), np.max(t).astype(float))
 
     x_all = np.array(x_all)
@@ -295,17 +306,17 @@ def runtime_plot():
     plt.close(fig)
 
 
-def fractal_dim_bacteria_count_vs_diffusion_constant():
-    options = produce_options()
-
-    fig, ax = plt.subplots(figsize=(8, 8))
+def fractal_dim_bacteria_count_vs_diffusion_constant(ax, options):
     ax2 = ax.twinx()
 
     data = []
     data_err = []
     n_cells = []
-    diffusion_constants = [0.1, 0.5, 2.0, 5.0, 80.0]
-    for diffusion_constant in diffusion_constants:
+    # diffusion_constants = [0.1, 0.5, 2.0, 5.0, 80.0]
+    diffusion_constants = np.exp(np.linspace(np.log(0.1), np.log(80), 10))
+    for diffusion_constant in tqdm(
+        diffusion_constants, desc="Calculating Fractal Dims"
+    ):
         options.domain.diffusion_constant = diffusion_constant
 
         cells, out_path = crb.sim_branching.load_or_compute_last_iter(options)
@@ -351,10 +362,6 @@ def fractal_dim_bacteria_count_vs_diffusion_constant():
         frameon=False,
     )
 
-    fig.tight_layout()
-    fig.savefig(options.storage_location / "fractal-dim-vs-diffusion-constant.pdf")
-    plt.close(fig)
-
 
 def fractal_dim_main():
     plt.rcParams.update(
@@ -369,7 +376,15 @@ def fractal_dim_main():
             "figure.titlesize": 20,
         }
     )
-    fractal_dim_comparison()
-    fractal_dim_over_time()
-    runtime_plot()
-    fractal_dim_bacteria_count_vs_diffusion_constant()
+    fig, axs = plt.subplots(1, 3, figsize=(24, 8))
+
+    options = produce_options()
+    fractal_dim_comparison(axs[0], options)
+    fractal_dim_over_time(axs[1], options)
+    fractal_dim_bacteria_count_vs_diffusion_constant(axs[2], options)
+
+    fig.tight_layout()
+    fig.savefig(options.storage_location / "fractal-dim.pdf")
+    plt.close(fig)
+
+    runtime_plot(options)

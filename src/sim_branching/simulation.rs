@@ -89,13 +89,13 @@ where
 #[approx(epsilon_type = f64)]
 pub struct Options {
     /// Holds bacteria parameters. See :class:`BacterialParameters`.
-    #[approx(map = |b| Python::with_gil(|py| Some(get_inner(b, py))))]
+    #[approx(map = |b| Python::attach(|py| Some(get_inner(b, py))))]
     pub bacteria: Py<BacterialParameters>,
     /// Holds domain parameters. See :class:`DomainParameters`.
-    #[approx(map = |b| Python::with_gil(|py| Some(get_inner(b, py))))]
+    #[approx(map = |b| Python::attach(|py| Some(get_inner(b, py))))]
     pub domain: Py<DomainParameters>,
     /// Holds time parameters. See :class:`TimeParameters`.
-    #[approx(map = |b| Python::with_gil(|py| Some(get_inner(b, py))))]
+    #[approx(map = |b| Python::attach(|py| Some(get_inner(b, py))))]
     pub time: Py<TimeParameters>,
     /// Show or hide the progress bar during the simulation.
     #[approx(skip)]
@@ -181,7 +181,7 @@ impl Options {
 
 impl PartialEq for Options {
     fn eq(&self, other: &Self) -> bool {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             self.bacteria.borrow(py).eq(&other.bacteria.borrow(py))
                 && self.domain.borrow(py).eq(&other.domain.borrow(py))
                 && self.time.borrow(py).eq(&other.time.borrow(py))
