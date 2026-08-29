@@ -317,7 +317,7 @@ def fractal_dim_bacteria_count_vs_diffusion_constant(ax, options):
     ax2 = ax.twinx()
 
     data = []
-    data_err = []
+    data_std = []
     n_cells = []
     # diffusion_constants = [0.1, 0.5, 2.0, 5.0, 80.0]
     diffusion_constants = np.exp(np.linspace(np.log(0.1), np.log(80), 10))
@@ -326,21 +326,21 @@ def fractal_dim_bacteria_count_vs_diffusion_constant(ax, options):
     ):
         options.domain.diffusion_constant = diffusion_constant
 
-        cells, out_path = crb.sim_branching.load_or_compute_last_iter(options)
+        cells, _ = crb.sim_branching.load_or_compute_last_iter(options)
         pos = np.array([c[0].mechanics.pos for c in cells.values()])
         _, _, popt, pcov = crb.sim_branching.calculate_fractal_dim_for_pos(pos, options)
         dim = popt[0]
         ddim = pcov[0, 0] ** 0.5
 
         data.append(-dim)
-        data_err.append(ddim)
+        data_std.append(ddim)
         n_cells.append(len(cells))
 
     ax.plot(diffusion_constants, data, color=COLOR1, label="dim")
     ax.fill_between(
         diffusion_constants,
-        np.array(data) - np.array(data_err),
-        np.array(data) + np.array(data_err),
+        np.array(data) - np.array(data_std),
+        np.array(data) + np.array(data_std),
         color=COLOR2,
         alpha=0.3,
     )
