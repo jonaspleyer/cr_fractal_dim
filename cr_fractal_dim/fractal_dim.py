@@ -426,8 +426,8 @@ def fractal_dim_main():
         )
         ax.set_axis_off()
 
-    s = 0.03
-    fig1.subplots_adjust(left=s, bottom=3 * s, top=1 - 3 * s, right=1 - s)
+    s = 0.04
+    fig1.subplots_adjust(left=s, bottom=2 * s, top=1 - 2 * s, right=1 - s)
     fig2.subplots_adjust(
         left=0,
         bottom=0,
